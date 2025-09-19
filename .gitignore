@@ -1,0 +1,22 @@
+.vscode/
+.idea/
+
+# Composer / Node (if ever used)
+vendor/
+node_modules/
+
+# Local secrets & env
+.env
+*.env
+db.local.php
+
+# DB dumps & backups (KEEP schema.sql, ignore others)
+*.sql
+!schema.sql
+*.dump
+*.bak
+ebm_dump.sql
+
+# Logs / temp
+*.log
+tmp/

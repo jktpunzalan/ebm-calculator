@@ -18,10 +18,8 @@
 --
 -- Current Database: `ebm`
 --
-
-CREATE DATABASE /*!32312 IF NOT EXISTS*/ `ebm` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci */;
-
-USE `ebm`;
+-- Note: CREATE DATABASE and USE statements removed for shared hosting compatibility
+-- Database must already exist before importing this file
 
 --
 -- Table structure for table `articles`

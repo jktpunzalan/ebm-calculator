@@ -1,22 +1,35 @@
-.vscode/
-.idea/
-
-# Composer / Node (if ever used)
-vendor/
-node_modules/
-
-# Local secrets & env
-.env
-*.env
-db.local.php
-
-# DB dumps & backups (KEEP schema.sql, ignore others)
-*.sql
-!schema.sql
-*.dump
-*.bak
-ebm_dump.sql
-
-# Logs / temp
 *.log
-tmp/
+.DS_Store
+.env
+.env.backup
+.env.production
+.phpactor.json
+.phpunit.result.cache
+/.fleet
+/.idea
+/.nova
+/.phpunit.cache
+/.vscode
+/.zed
+/auth.json
+/node_modules
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+/vendor
+Homestead.json
+Homestead.yaml
+Thumbs.db
+
+# Legacy backup (local reference only)
+/_legacy_backup
+
+# Storage (except .gitignore placeholders)
+/storage/*.log
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/logs/*
+!/storage/**/.gitignore

@@ -66,44 +66,6 @@ INSERT INTO `articles` VALUES (1,'10.1056/NEJMoa2206286','Dapagliflozin in Heart
 UNLOCK TABLES;
 
 --
--- Table structure for table `individualizations`
---
-
-DROP TABLE IF EXISTS `individualizations`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `individualizations` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `study_id` int(10) unsigned NOT NULL,
-  `arr_ind` decimal(12,6) DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `baseline_risk` decimal(8,6) DEFAULT NULL,
-  `rr_snapshot` decimal(12,6) DEFAULT NULL,
-  `treated_risk_ind` decimal(10,6) DEFAULT NULL,
-  `nnt_ind` int(11) DEFAULT NULL,
-  `scenario_age` int(11) DEFAULT NULL,
-  `scenario_sex` varchar(16) DEFAULT NULL,
-  `scenario_comorbidities` text DEFAULT NULL,
-  `scenario_setting` varchar(255) DEFAULT NULL,
-  `scenario_notes` text DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_ind_study_created` (`study_id`,`created_at`),
-  CONSTRAINT `fk_ind_study` FOREIGN KEY (`study_id`) REFERENCES `studies` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `individualizations`
---
-
-LOCK TABLES `individualizations` WRITE;
-/*!40000 ALTER TABLE `individualizations` DISABLE KEYS */;
-INSERT INTO `individualizations` VALUES (1,7,-0.400000,'2025-12-07 07:50:11','2025-12-07 15:50:11',0.600000,2.916667,1.000000,3,34,'male',NULL,'outpatient',NULL);
-/*!40000 ALTER TABLE `individualizations` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `studies`
 --
 
@@ -162,6 +124,44 @@ LOCK TABLES `studies` WRITE;
 /*!40000 ALTER TABLE `studies` DISABLE KEYS */;
 INSERT INTO `studies` VALUES (3,1,'Dapaglifozin','Placebo','Death',231,2900,261,2871,3131,3132,0.100000,0.073778,0.083333,0.885340,0.009555,105,NULL,0.088534,0.011466,NULL,NULL,NULL,NULL,NULL,'2025-09-18 15:16:52','2025-09-18 15:16:52',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(4,1,'Dapaglifozin','Placebo','Hospitalization',329,2802,418,2714,3131,3132,0.100000,0.105078,0.133461,0.787333,0.028383,36,NULL,0.078733,0.021267,NULL,NULL,NULL,NULL,NULL,'2025-09-18 15:19:15','2025-09-18 15:19:15',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(5,1,'Dapaglifozin','Placebo','Urgent Visit',60,3071,78,3054,3131,3132,0.100000,0.019163,0.024904,0.769476,0.005741,175,NULL,0.076948,0.023052,NULL,NULL,NULL,NULL,NULL,'2025-09-18 15:55:37','2025-09-18 15:55:37',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(6,13,'Drug A','Placebo','Composite CV outcome',12,24,4,31,36,35,NULL,0.333333,0.114286,2.916667,-0.219048,NULL,5,NULL,NULL,1,1,1,1,1,'2025-12-07 15:32:29','2025-12-07 15:32:29',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(7,13,'Drug A','Placebo','Composite CV outcome',12,24,4,31,36,35,NULL,0.333333,0.114286,2.916667,-0.219048,NULL,5,NULL,NULL,1,1,1,1,1,'2025-12-07 15:33:32','2025-12-07 15:33:32',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
 /*!40000 ALTER TABLE `studies` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `individualizations`
+--
+
+DROP TABLE IF EXISTS `individualizations`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `individualizations` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `study_id` int(10) unsigned NOT NULL,
+  `arr_ind` decimal(12,6) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `baseline_risk` decimal(8,6) DEFAULT NULL,
+  `rr_snapshot` decimal(12,6) DEFAULT NULL,
+  `treated_risk_ind` decimal(10,6) DEFAULT NULL,
+  `nnt_ind` int(11) DEFAULT NULL,
+  `scenario_age` int(11) DEFAULT NULL,
+  `scenario_sex` varchar(16) DEFAULT NULL,
+  `scenario_comorbidities` text DEFAULT NULL,
+  `scenario_setting` varchar(255) DEFAULT NULL,
+  `scenario_notes` text DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_ind_study_created` (`study_id`,`created_at`),
+  CONSTRAINT `fk_ind_study` FOREIGN KEY (`study_id`) REFERENCES `studies` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `individualizations`
+--
+
+LOCK TABLES `individualizations` WRITE;
+/*!40000 ALTER TABLE `individualizations` DISABLE KEYS */;
+INSERT INTO `individualizations` VALUES (1,7,-0.400000,'2025-12-07 07:50:11','2025-12-07 15:50:11',0.600000,2.916667,1.000000,3,34,'male',NULL,'outpatient',NULL);
+/*!40000 ALTER TABLE `individualizations` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

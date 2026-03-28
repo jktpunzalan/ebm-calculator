@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en" x-data="proAdmin()">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin • Professional — saliksic.com</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/style.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="/assets/js/admin.js"></script>
+</head>
+<body x-init="init()">
+  <div class="admin-wrap">
+    <aside class="sidebar">
+      <div style="font-weight:800;color:#9ad9d1">saliksic.com Admin</div>
+      <a href="/admin/index.html">Dashboard</a>
+      <a href="/admin/publications.html">Publications</a>
+      <a href="/admin/journal.html">Journal</a>
+      <a href="/admin/professional.html">Professional</a>
+      <a href="/admin/users.html">Users</a>
+      <a href="#" @click.prevent="logout">Logout</a>
+    </aside>
+    <main class="admin-main">
+      <h1>Professional</h1>
+      <div class="btns" style="margin:10px 0"><button class="btn" @click="openNew()">Add Member</button></div>
+      <div class="alert" x-show="error" x-text="error"></div>
+
+      <div class="card" style="overflow:auto">
+        <table class="table" id="pro-table">
+          <thead><tr><th>Order</th><th>Name</th><th>Role</th><th>Active</th><th>Actions</th></tr></thead>
+          <tbody x-ref="tbody">
+            <template x-for="m in list" :key="m.id">
+              <tr draggable="true" @dragstart="dragStart($event, m)" @dragover.prevent @drop="drop($event, m)">
+                <td x-text="m.display_order"></td>
+                <td x-text="m.name"></td>
+                <td x-text="m.role"></td>
+                <td><input type="checkbox" :checked="m.is_active" @change="toggleActive(m, $event)"></td>
+                <td>
+                  <button class="btn outline" @click="edit(m)">Edit</button>
+                  <button class="btn outline" style="border-color:var(--coral);color:var(--coral)" @click="remove(m)">Delete</button>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card" x-show="showModal" style="position:fixed;inset:20px;max-width:720px;margin:auto;background:#fff;z-index:1000;overflow:auto">
+        <div style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0" x-text="form.id?'Edit Member':'New Member'"></h2><a href="#" @click.prevent="close()">✕</a></div>
+        <div class="alert" x-show="modalError" x-text="modalError"></div>
+        <div class="grid-2">
+          <label>Name<br><input x-model="form.name" class="input" style="width:100%"></label>
+          <label>Role<br><input x-model="form.role" class="input" style="width:100%"></label>
+          <label>Credentials (comma-separated)<br><input x-model="form.credentials_csv" class="input" style="width:100%"></label>
+          <label>Photo path<br><input x-model="form.photo_path" class="input" style="width:100%"></label>
+          <label>Bio<br><textarea x-model="form.bio" class="input" style="width:100%;min-height:80px"></textarea></label>
+          <label>Contact email<br><input x-model="form.email" class="input" style="width:100%"></label>
+          <label>Contact website<br><input x-model="form.website" class="input" style="width:100%"></label>
+          <label>Display order<br><input x-model.number="form.display_order" type="number" class="input" style="width:100%"></label>
+          <label><input type="checkbox" x-model="form.is_active"> Active</label>
+        </div>
+        <div class="btns" style="margin-top:10px">
+          <button class="btn" @click="save()">Save</button>
+          <button class="btn outline" @click="close()">Cancel</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    function proAdmin(){
+      return {
+        list:[], error:'', showModal:false, modalError:'', dragging:null,
+        form:{ id:null, name:'', role:'', bio:'', photo_path:'', credentials_csv:'', email:'', website:'', display_order:0, is_active:true },
+        async init(){ requireAuth(); await this.load(); },
+        async load(){ const r = await apiFetch('/professional'); if(r.ok){ this.list = r.json.data||[]; } },
+        openNew(){ this.form={ id:null, name:'', role:'', bio:'', photo_path:'', credentials_csv:'', email:'', website:'', display_order: (this.list.length? Math.max(...this.list.map(x=>x.display_order))+1:0), is_active:true }; this.showModal=true; },
+        edit(m){ this.form={ id:m.id, name:m.name, role:m.role, bio:m.bio||'', photo_path:m.photo_path||'', credentials_csv:(m.credentials||[]).join(','), email:(m.contact||{}).email||'', website:(m.contact||{}).website||'', display_order:m.display_order||0, is_active: !!m.is_active }; this.showModal=true; },
+        close(){ this.showModal=false; this.modalError=''; },
+        payload(){ const contact={}; if(this.form.email) contact.email=this.form.email; if(this.form.website) contact.website=this.form.website; const creds=(this.form.credentials_csv||'').split(',').map(s=>s.trim()).filter(Boolean); return { name:this.form.name, role:this.form.role, bio:this.form.bio||null, photo_path:this.form.photo_path||null, credentials: creds.length?creds:null, contact: Object.keys(contact).length?contact:null, display_order: Number(this.form.display_order)||0, is_active: !!this.form.is_active }; },
+        async save(){ this.modalError=''; try{ if(this.form.id){ const r=await apiFetch(`/admin/professional/${this.form.id}`, { method:'PUT', body: JSON.stringify(this.payload()) }); if(!r.ok) throw new Error(r.json.message||'Update failed'); } else { const r=await apiFetch('/admin/professional', { method:'POST', body: JSON.stringify(this.payload()) }); if(!r.ok) throw new Error(r.json.message||'Create failed'); } this.close(); await this.load(); }catch(e){ this.modalError=e.message; } },
+        async toggleActive(m, ev){ try{ await apiFetch(`/admin/professional/${m.id}`, { method:'PUT', body: JSON.stringify({ is_active: ev.target.checked }) }); await this.load(); }catch(e){ this.error=e.message; } },
+        dragStart(e, m){ this.dragging=m; },
+        async drop(e, target){ if(!this.dragging || !target || this.dragging.id===target.id) return; const from=this.dragging.display_order; const to=target.display_order; // simple swap
+          try{ await apiFetch(`/admin/professional/${this.dragging.id}`, { method:'PUT', body: JSON.stringify({ display_order: to }) }); await apiFetch(`/admin/professional/${target.id}`, { method:'PUT', body: JSON.stringify({ display_order: from }) }); await this.load(); }catch(err){ this.error=err.message; }
+        },
+        logout(){ clearToken(); location.href='/admin/login.html'; }
+      }
+    }
+  </script>
+</body>
+</html>

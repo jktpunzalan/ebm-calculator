@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en" x-data="login()" xmlns:x-bind="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Login — saliksic.com</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/style.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="/assets/js/admin.js"></script>
+</head>
+<body style="background:#f7f7f5">
+  <div class="container" style="max-width:440px;padding:40px 0">
+    <h1 style="text-align:center;color:var(--teal)">Admin Login</h1>
+    <div class="card" style="margin-top:14px">
+      <div class="alert" x-show="error" x-text="error"></div>
+      <label>Email<br><input x-model="email" type="email" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px"></label>
+      <div style="height:8px"></div>
+      <label>Password<br><input x-model="password" type="password" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px"></label>
+      <div style="height:12px"></div>
+      <button class="btn" style="width:100%" @click="submit">Login</button>
+    </div>
+  </div>
+
+  <script>
+    function login(){
+      return {
+        email:'', password:'', error:'',
+        async submit(){
+          this.error='';
+          try{
+            const res = await fetch('https://api.saliksic.com/api/auth/login', {
+              method:'POST', headers:{'Content-Type':'application/json'},
+              body: JSON.stringify({ email:this.email, password:this.password })
+            });
+            const json = await res.json();
+            if(!res.ok){ this.error = json.message || 'Login failed'; return; }
+            const token = json.data?.token; if(!token){ this.error='Token missing'; return; }
+            sessionStorage.setItem('auth_token', token);
+            location.href = '/admin/index.html';
+          }catch(e){ this.error = e.message; }
+        }
+      }
+    }
+  </script>
+</body>
+</html>

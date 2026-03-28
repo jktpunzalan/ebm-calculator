@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>saliksic.com — Evidence for action</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&family=Lora:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/style.css" />
+</head>
+<body>
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/">saliksic.com</a>
+      <div class="menu">
+        <a href="/publications/">Publications</a>
+        <a href="/journal/">Journal</a>
+        <a href="/professional/">Professional</a>
+        <a href="/app/">EBM App</a>
+      </div>
+      <button class="hamburger" aria-label="Menu">☰</button>
+    </div>
+  </nav>
+
+  <header class="container hero">
+    <h1 class="h-title">Evidence for action</h1>
+    <p class="h-sub">Clinical epidemiology research and knowledge translation for better patient care.</p>
+    <div class="btns">
+      <a class="btn" href="/publications/">Browse publications</a>
+      <a class="btn outline" href="/app/">Open EBM app</a>
+    </div>
+
+    <div class="stats" id="stats">
+      <div class="stat"><div class="num" id="s-pubs">0</div><div class="label">Total Publications</div></div>
+      <div class="stat"><div class="num" id="s-views">0</div><div class="label">Total Views</div></div>
+      <div class="stat"><div class="num" id="s-shares">0</div><div class="label">Total Shares</div></div>
+      <div class="stat"><div class="num" id="s-journal">0</div><div class="label">Journal Articles</div></div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section>
+      <div class="grid-2">
+        <div class="card">
+          <div class="badge">Publications</div>
+          <h3>Actionable KT pages</h3>
+          <p>Audience-adaptive, action-oriented summaries with share and PDF export.</p>
+          <a class="pub-link" href="/publications/">Explore →</a>
+        </div>
+        <div class="card">
+          <div class="badge">Journal</div>
+          <h3>Peer-reviewed archive</h3>
+          <p>Browse articles by year, with DOI and volume/issue metadata.</p>
+          <a class="pub-link" href="/journal/">Browse →</a>
+        </div>
+        <div class="card">
+          <div class="badge">Resources</div>
+          <h3>Clinical tools</h3>
+          <p>Evidence calculators and appraisal checklists for on-the-go decision support.</p>
+          <a class="pub-link" href="/app/">Open app →</a>
+        </div>
+        <div class="card">
+          <div class="badge">Professional</div>
+          <h3>Our team</h3>
+          <p>Profiles, credentials, and contact for our clinical epidemiology group.</p>
+          <a class="pub-link" href="/professional/">Meet the team →</a>
+        </div>
+      </div>
+    </section>
+
+    <section style="margin-top:24px">
+      <h2 class="h-sub" style="color:var(--ink)">Recent publications</h2>
+      <div class="pub-list" id="pub-list"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container inner">
+      <div>© <span id="yr"></span> saliksic.com • <a href="/professional/">Professional</a> • <a href="/journal/">Journal</a></div>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+  <script>
+    document.getElementById('yr').textContent = new Date().getFullYear();
+
+    async function loadStatsAndRecent() {
+      try {
+        const pubs = await apiGet('/publications');
+        const totalPubs = pubs.meta ? pubs.meta.total : (pubs.data?.length || 0);
+        const totals = (pubs.data || []).reduce((acc, p) => {
+          acc.views += (p.views || 0); acc.shares += (p.shares || 0); return acc;
+        }, {views:0, shares:0});
+        countUp(document.getElementById('s-pubs'), totalPubs);
+        countUp(document.getElementById('s-views'), totals.views);
+        countUp(document.getElementById('s-shares'), totals.shares);
+
+        const jr = await apiGet('/journal');
+        const totalJournal = jr.meta ? jr.meta.total : (jr.data?.length || 0);
+        countUp(document.getElementById('s-journal'), totalJournal);
+
+        const list = document.getElementById('pub-list');
+        list.innerHTML = '';
+        (pubs.data || []).slice(0,6).forEach(p => {
+          const div = document.createElement('div');
+          div.className = 'card';
+          const bClass = 'badge '+('type-'+(studyTypeClass(p.study_type)||'').replace('type-',''));
+          div.innerHTML = `
+            <span class="badge ${studyTypeClass(p.study_type)}">${p.study_type || ''}</span>
+            <h3>${p.title}</h3>
+            <div class="pub-meta"><span>${fmtDate(p.published_at)}</span><span>👁️ ${p.views||0}</span></div>
+            <a class="pub-link" href="/publications/${p.slug}.html">Read →</a>
+          `;
+          list.appendChild(div);
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    loadStatsAndRecent();
+  </script>
+</body>
+</html>

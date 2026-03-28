@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en" x-data="journalAdmin()">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin • Journal — saliksic.com</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/style.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="/assets/js/admin.js"></script>
+</head>
+<body x-init="init()">
+  <div class="admin-wrap">
+    <aside class="sidebar">
+      <div style="font-weight:800;color:#9ad9d1">saliksic.com Admin</div>
+      <a href="/admin/index.html">Dashboard</a>
+      <a href="/admin/publications.html">Publications</a>
+      <a href="/admin/journal.html">Journal</a>
+      <a href="/admin/professional.html">Professional</a>
+      <a href="/admin/users.html">Users</a>
+      <a href="#" @click.prevent="logout">Logout</a>
+    </aside>
+    <main class="admin-main">
+      <h1>Journal</h1>
+      <div class="btns" style="margin:10px 0"><button class="btn" @click="openNew()">Add Article</button></div>
+      <div class="alert" x-show="error" x-text="error"></div>
+
+      <table class="table">
+        <thead><tr><th>Title</th><th>Authors</th><th>Year</th><th>DOI</th><th>Actions</th></tr></thead>
+        <tbody>
+          <template x-for="a in list" :key="a.id">
+            <tr>
+              <td x-text="a.title"></td>
+              <td x-text="a.authors"></td>
+              <td x-text="a.year"></td>
+              <td><a class="pub-link" target="_blank" x-show="a.doi" :href="'https://doi.org/'+a.doi">Link</a></td>
+              <td>
+                <button class="btn outline" @click="edit(a)">Edit</button>
+                <button class="btn outline" style="border-color:var(--coral);color:var(--coral)" @click="remove(a)">Delete</button>
+              </td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+
+      <div class="card" x-show="showModal" style="position:fixed;inset:20px;max-width:720px;margin:auto;background:#fff;z-index:1000;overflow:auto">
+        <div style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0" x-text="form.id?'Edit Article':'New Article'"></h2><a href="#" @click.prevent="close()">✕</a></div>
+        <div class="alert" x-show="modalError" x-text="modalError"></div>
+        <div class="grid-2">
+          <label>Title<br><input x-model="form.title" class="input" style="width:100%"></label>
+          <label>Authors<br><input x-model="form.authors" class="input" style="width:100%"></label>
+          <label>Abstract<br><textarea x-model="form.abstract" class="input" style="width:100%;min-height:80px"></textarea></label>
+          <label>DOI<br><input x-model="form.doi" class="input" style="width:100%"></label>
+          <label>Volume<br><input x-model="form.volume" class="input" style="width:100%"></label>
+          <label>Issue<br><input x-model="form.issue" class="input" style="width:100%"></label>
+          <label>Year<br><input x-model.number="form.year" type="number" class="input" style="width:100%"></label>
+          <label>PDF path<br><input x-model="form.pdf_path" class="input" style="width:100%"></label>
+          <label>Published at<br><input x-model="form.published_at" type="date" class="input" style="width:100%"></label>
+        </div>
+        <div class="btns" style="margin-top:10px">
+          <button class="btn" @click="save()">Save</button>
+          <button class="btn outline" @click="close()">Cancel</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    function journalAdmin(){
+      return {
+        list:[], error:'', showModal:false, modalError:'',
+        form:{ id:null, title:'', authors:'', abstract:'', doi:'', volume:'', issue:'', year:'', pdf_path:'', published_at:'' },
+        async init(){ requireAuth(); await this.load(); },
+        async load(){
+          const r = await apiFetch('/journal');
+          if(r.ok){ this.list = r.json.data || []; }
+        },
+        openNew(){ this.form={ id:null, title:'', authors:'', abstract:'', doi:'', volume:'', issue:'', year:'', pdf_path:'', published_at:'' }; this.showModal=true; },
+        edit(a){ this.form={ id:a.id, title:a.title, authors:a.authors, abstract:a.abstract||'', doi:a.doi||'', volume:a.volume||'', issue:a.issue||'', year:a.year||'', pdf_path:a.pdf_path||'', published_at:(a.published_at||'').slice(0,10) }; this.showModal=true; },
+        close(){ this.showModal=false; this.modalError=''; },
+        payload(){ return { title:this.form.title, authors:this.form.authors, abstract:this.form.abstract||null, doi:this.form.doi||null, volume:this.form.volume||null, issue:this.form.issue||null, year: Number(this.form.year)||0, pdf_path:this.form.pdf_path||null, published_at:this.form.published_at||null }; },
+        async save(){
+          this.modalError='';
+          try{
+            if(this.form.id){
+              const r = await apiFetch(`/admin/journal/${this.form.id}`, { method:'PUT', body: JSON.stringify(this.payload()) });
+              if(!r.ok) throw new Error(r.json.message||'Update failed');
+            } else {
+              const r = await apiFetch('/admin/journal', { method:'POST', body: JSON.stringify(this.payload()) });
+              if(!r.ok) throw new Error(r.json.message||'Create failed');
+            }
+            this.close(); await this.load();
+          }catch(e){ this.modalError=e.message; }
+        },
+        async remove(a){ if(!confirm('Delete article?')) return; try{ const r=await apiFetch(`/admin/journal/${a.id}`, { method:'DELETE' }); if(!r.ok) throw new Error('Delete failed'); await this.load(); }catch(e){ this.error=e.message; } },
+        logout(){ clearToken(); location.href='/admin/login.html'; }
+      }
+    }
+  </script>
+</body>
+</html>

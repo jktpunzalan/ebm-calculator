@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Professional — saliksic.com</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/style.css" />
+</head>
+<body>
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/">saliksic.com</a>
+      <div class="menu">
+        <a href="/publications/">Publications</a>
+        <a href="/journal/">Journal</a>
+        <a href="/professional/">Professional</a>
+        <a href="/app/">EBM App</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container" style="padding:20px 0">
+    <h1>Professional</h1>
+    <div class="prof-grid" id="prof-grid"></div>
+  </main>
+
+  <footer class="footer">
+    <div class="container inner">© <span id="yr"></span> saliksic.com</div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+  <script>
+    document.getElementById('yr').textContent = new Date().getFullYear();
+    async function loadTeam(){
+      try{
+        const res = await apiGet('/professional');
+        const grid = document.getElementById('prof-grid');
+        grid.innerHTML='';
+        (res.data||[]).forEach(m=>{
+          const card = document.createElement('div');
+          card.className='card prof-card';
+          const creds = (m.credentials||[]).map(c=>`<span class="badge">${c}</span>`).join(' ');
+          const contacts = (m.contact||{});
+          const links = [];
+          if (contacts.email) links.push(`<a class="pub-link" href="mailto:${contacts.email}">Email</a>`);
+          if (contacts.website) links.push(`<a class="pub-link" target="_blank" href="${contacts.website}">Website</a>`);
+          card.innerHTML = `
+            <img src="${m.photo_path||'/assets/img/avatar-placeholder.png'}" alt="${m.name}">
+            <div class="prof-name">${m.name}</div>
+            <div class="prof-role">${m.role||''}</div>
+            <div class="badges">${creds}</div>
+            <p style="margin-top:8px">${m.bio||''}</p>
+            <div style="margin-top:8px;display:flex;gap:10px">${links.join(' ')}</div>
+          `;
+          grid.appendChild(card);
+        });
+      }catch(e){ console.error(e); }
+    }
+    loadTeam();
+  </script>
+</body>
+</html>

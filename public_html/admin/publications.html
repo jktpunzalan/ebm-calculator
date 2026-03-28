@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en" x-data="pubs()">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin • Publications — saliksic.com</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/style.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="/assets/js/admin.js"></script>
+</head>
+<body x-init="init()">
+  <div class="admin-wrap">
+    <aside class="sidebar">
+      <div style="font-weight:800;color:#9ad9d1">saliksic.com Admin</div>
+      <a href="/admin/index.html">Dashboard</a>
+      <a href="/admin/publications.html">Publications</a>
+      <a href="/admin/journal.html">Journal</a>
+      <a href="/admin/professional.html">Professional</a>
+      <a href="/admin/users.html">Users</a>
+      <a href="#" @click.prevent="logout">Logout</a>
+    </aside>
+    <main class="admin-main">
+      <h1>Publications</h1>
+      <div class="btns" style="margin:10px 0"><button class="btn" @click="openNew()">New Publication</button></div>
+      <div class="alert" x-show="error" x-text="error"></div>
+
+      <table class="table">
+        <thead><tr><th>Slug</th><th>Title</th><th>Type</th><th>Views</th><th>Shares</th><th>Active</th><th>Actions</th></tr></thead>
+        <tbody>
+          <template x-for="p in list" :key="p.id">
+            <tr>
+              <td x-text="p.slug"></td>
+              <td x-text="p.title"></td>
+              <td x-text="p.study_type"></td>
+              <td x-text="p.views||0"></td>
+              <td x-text="p.shares||0"></td>
+              <td><input type="checkbox" :checked="p.is_active" @change="toggleActive(p, $event)"></td>
+              <td>
+                <button class="btn outline" @click="edit(p)">Edit</button>
+                <button class="btn outline" style="border-color:var(--coral);color:var(--coral)" @click="remove(p)">Delete</button>
+              </td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+
+      <div class="card" x-show="showModal" style="position:fixed;inset:20px;max-width:640px;margin:auto;background:#fff;z-index:1000">
+        <div style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0" x-text="form.id?'Edit Publication':'New Publication'"></h2><a href="#" @click.prevent="close()">✕</a></div>
+        <div class="alert" x-show="modalError" x-text="modalError"></div>
+        <div class="grid-2">
+          <label>Slug<br><input x-model="form.slug" class="input" style="width:100%"></label>
+          <label>Study type<br><input x-model="form.study_type" class="input" style="width:100%"></label>
+          <label>Title<br><input x-model="form.title" class="input" style="width:100%"></label>
+          <label>Authors<br><input x-model="form.authors" class="input" style="width:100%"></label>
+          <label>Audience tags (comma-separated)<br><input x-model="form.audience_tags_csv" class="input" style="width:100%"></label>
+          <label>Published at<br><input x-model="form.published_at" type="date" class="input" style="width:100%"></label>
+          <label>HTML file path<br><input x-model="form.html_file_path" class="input" style="width:100%"></label>
+          <label>Thumbnail path<br><input x-model="form.thumbnail_path" class="input" style="width:100%"></label>
+          <label><input type="checkbox" x-model="form.is_active"> Active</label>
+        </div>
+        <div class="btns" style="margin-top:10px">
+          <button class="btn" @click="save()">Save</button>
+          <button class="btn outline" @click="close()">Cancel</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    function pubs(){
+      return {
+        list:[], error:'', showModal:false, modalError:'',
+        form:{ id:null, slug:'', title:'', authors:'', study_type:'', audience_tags_csv:'', published_at:'', html_file_path:'', thumbnail_path:'', is_active:true },
+        async init(){ requireAuth(); await this.load(); },
+        async load(){
+          const r = await apiFetch('/publications');
+          if(r.ok){ this.list = r.json.data || []; }
+        },
+        openNew(){ this.form={ id:null, slug:'', title:'', authors:'', study_type:'', audience_tags_csv:'', published_at:'', html_file_path:'', thumbnail_path:'', is_active:true }; this.showModal=true; },
+        edit(p){ this.form={ id:p.id, slug:p.slug, title:p.title, authors:p.authors, study_type:p.study_type, audience_tags_csv:(p.audience_tags||[]).join(','), published_at:(p.published_at||'').slice(0,10), html_file_path:p.html_file_path||'', thumbnail_path:p.thumbnail_path||'', is_active:!!p.is_active }; this.showModal=true; },
+        close(){ this.showModal=false; this.modalError=''; },
+        toPayload(){
+          const payload = { slug:this.form.slug, title:this.form.title, authors:this.form.authors, study_type:this.form.study_type, html_file_path:this.form.html_file_path||null, thumbnail_path:this.form.thumbnail_path||null, published_at:this.form.published_at||null, is_active:!!this.form.is_active };
+          const tags = (this.form.audience_tags_csv||'').split(',').map(s=>s.trim()).filter(Boolean);
+          if(tags.length) payload.audience_tags = tags;
+          return payload;
+        },
+        async save(){
+          this.modalError='';
+          try{
+            if(this.form.id){
+              const r = await apiFetch(`/admin/publications/${this.form.id}`, { method:'PUT', body: JSON.stringify(this.toPayload()) });
+              if(!r.ok) throw new Error(r.json.message||'Update failed');
+            } else {
+              const r = await apiFetch('/admin/publications', { method:'POST', body: JSON.stringify(this.toPayload()) });
+              if(!r.ok) throw new Error(r.json.message||'Create failed');
+            }
+            this.close(); await this.load();
+          }catch(e){ this.modalError = e.message; }
+        },
+        async toggleActive(p, ev){
+          try{ await apiFetch(`/admin/publications/${p.id}`, { method:'PUT', body: JSON.stringify({ is_active: ev.target.checked }) }); await this.load(); }catch(e){ this.error=e.message; }
+        },
+        async remove(p){ if(!confirm('Delete publication?')) return; try{ await apiFetch(`/admin/publications/${p.id}`, { method:'DELETE' }); await this.load(); }catch(e){ this.error=e.message; } },
+        logout(){ clearToken(); location.href='/admin/login.html'; }
+      }
+    }
+  </script>
+</body>
+</html>

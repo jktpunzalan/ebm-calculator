@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Admin Login — saliksic.com</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/css/style.css" />
+  <link rel="stylesheet" href="/ebm/assets/css/style.css" />
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-  <script src="/assets/js/admin.js"></script>
+  <script src="/ebm/assets/js/admin.js"></script>
 </head>
 <body style="background:#f7f7f5">
   <div class="container" style="max-width:440px;padding:40px 0">
@@ -37,7 +37,7 @@
             if(!res.ok){ this.error = json.message || 'Login failed'; return; }
             const token = json.data?.token; if(!token){ this.error='Token missing'; return; }
             sessionStorage.setItem('auth_token', token);
-            location.href = '/admin/index.html';
+            location.href = '/ebm/admin/index.html';
           }catch(e){ this.error = e.message; }
         }
       }

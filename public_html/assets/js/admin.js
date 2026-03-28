@@ -11,8 +11,8 @@ async function apiFetch(path, opts = {}) {
   const res = await fetch(`${API}${path}`, Object.assign({}, opts, { headers }));
   if (res.status === 401 || res.status === 403) {
     // Redirect to login
-    if (!location.pathname.endsWith('/admin/login.html')) {
-      location.href = '/admin/login.html';
+    if (!location.pathname.endsWith('/ebm/admin/login.html')) {
+      location.href = '/ebm/admin/login.html';
     }
     throw new Error(`Auth error ${res.status}`);
   }
@@ -22,6 +22,6 @@ async function apiFetch(path, opts = {}) {
 
 function requireAuth() {
   if (!getToken()) {
-    location.href = '/admin/login.html';
+    location.href = '/ebm/admin/login.html';
   }
 }

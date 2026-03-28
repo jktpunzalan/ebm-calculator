@@ -5,19 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Admin Dashboard — saliksic.com</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/css/style.css" />
+  <link rel="stylesheet" href="/ebm/assets/css/style.css" />
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-  <script src="/assets/js/admin.js"></script>
+  <script src="/ebm/assets/js/admin.js"></script>
 </head>
 <body x-init="init()">
   <div class="admin-wrap">
     <aside class="sidebar">
       <div style="font-weight:800;color:#9ad9d1">saliksic.com Admin</div>
-      <a href="/admin/index.html">Dashboard</a>
-      <a href="/admin/publications.html">Publications</a>
-      <a href="/admin/journal.html">Journal</a>
-      <a href="/admin/professional.html">Professional</a>
-      <a href="/admin/users.html">Users</a>
+      <a href="/ebm/admin/index.html">Dashboard</a>
+      <a href="/ebm/admin/publications.html">Publications</a>
+      <a href="/ebm/admin/journal.html">Journal</a>
+      <a href="/ebm/admin/professional.html">Professional</a>
+      <a href="/ebm/admin/users.html">Users</a>
       <a href="#" @click.prevent="logout">Logout</a>
     </aside>
     <main class="admin-main">
@@ -59,7 +59,7 @@
           const pubs = await apiFetch('/publications');
           if(pubs.ok) this.recent = (pubs.json.data||[]).slice(0,10);
         },
-        async logout(){ clearToken(); location.href='/admin/login.html'; }
+        async logout(){ clearToken(); location.href='/ebm/admin/login.html'; }
       }
     }
   </script>
